@@ -1,4 +1,4 @@
-FROM certbot/certbot:v0.20.0
+FROM certbot/certbot:v1.3.0
 
 ENV \
   DOMAINS="" \
