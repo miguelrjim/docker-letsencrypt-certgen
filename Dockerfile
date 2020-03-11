@@ -27,6 +27,9 @@ RUN apk add --update curl openssl socat bash \
 COPY scripts /le-certgen/scripts
 COPY entrypoint.sh /le-certgen/entrypoint.sh
 
+RUN chmod +x /le-certgen/entrypoint.sh
+RUN chmod +x /le-certgen/scripts/*.sh
+
 VOLUME /var/ssl
 VOLUME /var/acme_challenge_webroot
 VOLUME /etc/letsencrypt
