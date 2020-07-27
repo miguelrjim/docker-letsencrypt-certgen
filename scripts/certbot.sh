@@ -18,12 +18,13 @@ save_certbot_cert(){
   local cert_src="$certbot_cert_home/$cert_name"
   local cert_dst="$cert_drop_path/$cert_name"
 
-  mkdir -p "$cert_dst/certs" "$cert_dst/private";
+  mkdir -p "$cert_dst"
 
-  cp -fL "$cert_src/cert.pem" "$cert_dst/certs/cert.rsa.pem";
-  cp -fL "$cert_src/chain.pem" "$cert_dst/certs/chain.rsa.pem";
-  cp -fL "$cert_src/fullchain.pem" "$cert_dst/certs/fullchain.rsa.pem";
-  cp -fL "$cert_src/privkey.pem" "$cert_dst/private/privkey.rsa.pem";
+  cp -fL "$cert_src/cert.pem" "$cert_dst/cert.pem";
+  cp -fL "$cert_src/chain.pem" "$cert_dst/chain.pem";
+  cp -fL "$cert_src/fullchain.pem" "$cert_dst/fullchain.pem";
+  cp -fL "$cert_src/privkey.pem" "$cert_dst/privkey.pem";
+  cat "$cert_src/privkey.pem" "$cert_src/fullchain.pem" > "$cert_dst/priv-fullchain-bundle.pem"
 }
 
 build_challenge_mode_args(){
@@ -31,10 +32,11 @@ build_challenge_mode_args(){
   local args="";
 
   if [ "$mode" == "webroot" ]; then
-    args="--webroot -w $webroot_path"
-  fi
-  if [ "$mode" == "standalone" ]; then
-    args="--standalone"
+    args="--webroot -w $webroot_path --preferred-challenges http-01"
+  elif [ "$mode" == "duckdns" ]; then
+    args="--non-interactive --manual --preferred-challenges dns --manual-public-ip-logging-ok --manual-auth-hook /le-certgen/scripts/duckdns-set-txt.sh --manual-cleanup-hook /le-certgen/scripts/duckdns-clear-txt.sh"
+  else
+    args="--standalone --preferred-challenges http-01"
   fi
 
   echo $args;
@@ -68,7 +70,6 @@ issue_or_renew_rsa_cert(){
     -d "$domains" \
     -m "$email" \
     --agree-tos \
-    --preferred-challenges http-01 \
     --allow-subset-of-names \
     --rsa-key-size "$RSA_KEY_LENGTH" \
     $args

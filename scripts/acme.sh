@@ -17,15 +17,15 @@ save_acme_cert(){
   local cert_name="$1"
   local cert_dst="$cert_drop_path/$cert_name"
 
-  mkdir -p "$cert_dst/certs" "$cert_dst/private";
+  mkdir -p "$cert_dst";
 
   acme.sh \
     --install-cert -d "$cert_name" \
     --ecc \
-    --cert-file "$cert_dst/certs/cert.ecc.pem" \
-    --ca-file "$cert_dst/certs/chain.ecc.pem" \
-    --fullchain-file "$cert_dst/certs/fullchain.ecc.pem" \
-    --key-file "$cert_dst/private/privkey.ecc.pem"
+    --cert-file "$cert_dst/cert.ecc.pem" \
+    --ca-file "$cert_dst/chain.ecc.pem" \
+    --fullchain-file "$cert_dst/fullchain.ecc.pem" \
+    --key-file "$cert_dst/privkey.ecc.pem"
 }
 
 build_domains_args(){
@@ -40,8 +40,10 @@ build_challenge_mode_args(){
 
   if [ "$mode" == "webroot" ]; then
     args="-w $webroot_path"
-  fi
-  if [ "$mode" == "standalone" ]; then
+  
+  elif [ "$mode" == "duckdns" ]; then
+    args="--dns dns_duckdns"
+  else
     args="--standalone"
   fi
 
@@ -65,6 +67,9 @@ issue_esdca_cert(){
   fi
 
   set +e
+
+  export DuckDNS_Token="$DuckDNS_Token"
+  
   acme.sh \
     --issue \
     --ecc \
@@ -99,6 +104,9 @@ renew_ecdsa_cert(){
   fi
 
   set +e
+
+  export DuckDNS_Token="$DuckDNS_Token"
+
   acme.sh \
     --renew \
     --ecc \
@@ -122,6 +130,8 @@ revoke_ecdsa_cert(){
   if [ "$STAGING" -eq 1 ]; then
     args="$args --staging";
   fi
+
+  export DuckDNS_Token="$DuckDNS_Token"
 
   acme.sh \
     --revoke \
@@ -151,6 +161,8 @@ main() {
   local domains="$2";
   local cert_name=${domains//,*/}
   local email="admin@$cert_name";
+
+  . /config/variables.conf
 
   if [ "$command" == "issue" ]; then
     log "Issue ECDSA certificate '$cert_name' for domains '$domains'"

@@ -6,11 +6,14 @@ if [ "$VERBOSE" -eq 1 ]; then
   set -x
 fi
 
+echo "All args"
+echo $@
+
 CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source "$CURRENT_DIR/scripts/utils.sh"
 
-export webroot_path="/var/acme_challenge_webroot"
-export cert_drop_path="/var/ssl"
+export webroot_path="/config/acme_challenge_webroot"
+export cert_drop_path="/config/ssl"
 export certbot_cert_home="/etc/letsencrypt/live"
 export acme_cert_home="$CERT_HOME"
 
@@ -40,8 +43,6 @@ main(){
     [ "$RSA_ENABLED" -eq 1 ] && "$CURRENT_DIR/scripts/certbot.sh" "$command" "$domain" || true
     [ "$ECDSA_ENABLED" -eq 1 ] && "$CURRENT_DIR/scripts/acme.sh" "$command" "$domain" || true
   done
-
-  chown -R root:$SSL_GROUP_ID "$cert_drop_path"
 
   log "Check out following path for certificates and keys: $cert_drop_path"
 }

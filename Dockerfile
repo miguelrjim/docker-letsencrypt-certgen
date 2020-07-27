@@ -1,4 +1,4 @@
-FROM certbot/certbot:v1.3.0
+FROM certbot/certbot:latest
 
 ENV \
   DOMAINS="" \
@@ -9,7 +9,6 @@ ENV \
   CHALLENGE_MODE=standalone \
   STAGING=1 \
   FORCE_RENEWAL=0 \
-  SSL_GROUP_ID=1337 \
   MUST_STAPLE=0 \
   VERBOSE=0
 
@@ -30,11 +29,8 @@ COPY entrypoint.sh /le-certgen/entrypoint.sh
 RUN chmod +x /le-certgen/entrypoint.sh
 RUN chmod +x /le-certgen/scripts/*.sh
 
-VOLUME /var/ssl
-VOLUME /var/acme_challenge_webroot
-VOLUME /etc/letsencrypt
-VOLUME /etc/acme
+VOLUME /config
 
 EXPOSE 80
 
-ENTRYPOINT ["/le-certgen/entrypoint.sh"]
+ENTRYPOINT ["/le-certgen/entrypoint.sh", "issue"]
