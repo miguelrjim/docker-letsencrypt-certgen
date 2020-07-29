@@ -2,9 +2,16 @@
 
 . /config/variables.conf
 
-URL="https://www.duckdns.org/update?domains=${CERTBOT_DOMAIN}&token=${DuckDNS_Token}&txt=${CERTBOT_VALIDATION}"
-echo "$URL"
-curl "$URL"
+regex="\.?([^.]+)\.duckdns\.org$"
+if [[ $CERTBOT_DOMAIN =~ $regex ]]
+then
+    main="${BASH_REMATCH[1]}"
+    URL="https://www.duckdns.org/update?domains=${main}&token=${DuckDNS_Token}&txt=${CERTBOT_VALIDATION}"
+    echo "$URL"
+    curl "$URL"
 
-echo "sleeping 20"
-sleep 20
+    echo "sleeping 20"
+    sleep 20
+else
+    exit 1
+fi
